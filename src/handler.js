@@ -24,7 +24,9 @@ let pendingClear = null; // { ts }
 const CLEAR_TTL_MS = 2 * 60 * 1000;
 
 function isYes(text) {
-  return /^(כן|אישור|בטוח|נקה|yes|y)\b/i.test(text.trim());
+  // הערה: לא משתמשים ב-\b כי הוא לא עובד עם עברית. בודקים שההודעה מתחילה במילת אישור
+  // ואחריה סוף-מחרוזת או תו שאינו אות (רווח/סימן פיסוק), כדי לא לתפוס "כנראה" וכד'.
+  return /^(כן|אישור|בטוח|נקה|אפס|yes|y|ok)([^א-תa-z].*)?$/i.test(text.trim());
 }
 
 function joinList(arr) {
