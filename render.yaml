@@ -1,0 +1,30 @@
+# הגדרת פריסה ל-Render. דיסק קבוע נדרש כדי שהרשימה תישמר בין הפעלות.
+services:
+  - type: web
+    name: whatsapp-shopping-bot
+    runtime: node
+    plan: starter            # נדרש לתוכנית בתשלום עבור דיסק קבוע. לבדיקה אפשר free (אך הנתונים יימחקו)
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: PHONE_NUMBER_ID
+        sync: false
+      - key: VERIFY_TOKEN
+        sync: false
+      - key: APP_SECRET
+        sync: false
+      - key: ALLOWED_NUMBER
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-4-5-20251001
+    disk:
+      name: bot-data
+      mountPath: /data
+      sizeGB: 1
