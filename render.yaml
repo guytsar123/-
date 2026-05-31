@@ -1,15 +1,17 @@
-# הגדרת פריסה ל-Render. דיסק קבוע נדרש כדי שהרשימה תישמר בין הפעלות.
+# הגדרת פריסה ל-Render (תוכנית חינמית).
+# הערה: ב-free אין דיסק קבוע — הרשימה נשמרת בקבצים זמניים שמתאפסים בכל deploy/שינה.
+# לשמירה קבועה: שדרג ל-plan: starter והחזר את בלוק ה-disk (mountPath /data + DATA_DIR=/data).
 services:
   - type: web
     name: whatsapp-shopping-bot
     runtime: node
-    plan: starter            # נדרש לתוכנית בתשלום עבור דיסק קבוע. לבדיקה אפשר free (אך הנתונים יימחקו)
+    plan: free
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: DATA_DIR
-        value: /data
+        value: ./data
       - key: WHATSAPP_TOKEN
         sync: false
       - key: PHONE_NUMBER_ID
@@ -24,7 +26,3 @@ services:
         sync: false
       - key: ANTHROPIC_MODEL
         value: claude-haiku-4-5-20251001
-    disk:
-      name: bot-data
-      mountPath: /data
-      sizeGB: 1
