@@ -41,7 +41,7 @@ export async function handleMessage(text) {
     } else if (isYes(trimmed)) {
       const count = clearList();
       pendingClear = null;
-      return { reply: `🗑️ נוקתה הרשימה (${count} פריטים הוסרו).`, react: null };
+      return { reply: `✨ הרשימה אופסה (${count} פריטים הוסרו). מתחילים שבוע חדש! 🛒`, react: null };
     } else {
       pendingClear = null;
       return { reply: 'ביטלתי את הניקוי. הרשימה נשארה כמו שהיא.', react: null };
@@ -87,15 +87,19 @@ export async function handleMessage(text) {
       return { reply: renderSimpleList(), react: null };
 
     case 'compile': {
-      const reply = await compileList();
+      let reply = await compileList();
+      // תזכורת לזרימה השבועית: לאחר הקניה אפשר לאפס לשבוע הבא.
+      if (getActiveItems().length) {
+        reply += '\n\n_כשתסיים את הקניה, שלח "סיימתי קניות" כדי לאפס לשבוע הבא._';
+      }
       return { reply, react: null };
     }
 
     case 'clear': {
       const count = getActiveItems().length;
-      if (!count) return { reply: '🛒 הרשימה כבר ריקה.', react: null };
+      if (!count) return { reply: '🛒 הרשימה כבר ריקה — אפשר להתחיל להוסיף לשבוע הבא. 🙂', react: null };
       pendingClear = { ts: Date.now() };
-      return { reply: `למחוק את כל הרשימה (${count} פריטים)? כתוב "כן" לאישור.`, react: null };
+      return { reply: `🛒 לאפס את כל הרשימה (${count} פריטים) ולהתחיל מחדש? כתוב "כן" לאישור.`, react: null };
     }
 
     case 'help':
