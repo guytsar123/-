@@ -1,5 +1,5 @@
 // לוגיקת רשימת הקניות: הוספה/מיזוג/הסרה/סימון/תצוגה/סידור לפי קטגוריות.
-import { loadList, saveList } from './storage.js';
+import { loadList, saveList, loadStaples, saveStaples } from './storage.js';
 import { cleanDisplay, sameItem } from './hebrew.js';
 import { classifyLocal, rememberCategory, categoryMeta, CATEGORY_ORDER } from './categories.js';
 import { classifyItems } from './claude.js';
@@ -160,4 +160,58 @@ export async function compileList() {
   }
 
   return `🛒 *רשימת קניות מסודרת* (${items.length} פריטים)\n\n` + sections.join('\n\n');
+}
+
+// ===== פריטים קבועים (staples) =====
+
+// הוספת פריטים לרשימת הקבועים (ללא כפילויות).
+export function addStaples(newItems) {
+  const staples = loadStaples();
+  const added = [];
+  for (const raw of newItems) {
+    const name = cleanDisplay(raw.name);
+    if (!name) continue;
+    if (staples.items.some((it) => sameItem(it.name, name))) continue;
+    staples.items.push({ name, qty: raw.qty != null ? raw.qty : null, unit: raw.unit || null });
+    added.push(name);
+  }
+  saveStaples(staples);
+  return added;
+}
+
+// הסרת פריטים מרשימת הקבועים.
+export function removeStaples(targets) {
+  const staples = loadStaples();
+  const removed = [];
+  for (const raw of targets) {
+    const name = cleanDisplay(raw.name);
+    const idx = staples.items.findIndex((it) => sameItem(it.name, name));
+    if (idx !== -1) {
+      removed.push(staples.items[idx].name);
+      staples.items.splice(idx, 1);
+    }
+  }
+  saveStaples(staples);
+  return removed;
+}
+
+export function getStaples() {
+  return loadStaples().items;
+}
+
+// הזרקת כל הקבועים לרשימה הפעילה (עם מיזוג כפילויות).
+export function applyStaples() {
+  const staples = loadStaples().items;
+  if (!staples.length) return { added: [], merged: [], empty: true };
+  const { added, merged } = addItems(staples);
+  return { added, merged, empty: false };
+}
+
+export function renderStaples() {
+  const items = getStaples();
+  if (!items.length) {
+    return '⭐ אין לך עדיין פריטים קבועים.\nכדי להגדיר, כתוב למשל:\n"הוסף לקבועים חלב, לחם, ביצים, קפה"';
+  }
+  const lines = items.map((it) => `• ${formatQty(it)}`);
+  return `⭐ *הפריטים הקבועים שלך* (${items.length}):\n` + lines.join('\n');
 }

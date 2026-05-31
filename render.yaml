@@ -26,3 +26,7 @@ services:
         sync: false
       - key: ANTHROPIC_MODEL
         value: claude-haiku-4-5-20251001
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: whisper-large-v3-turbo

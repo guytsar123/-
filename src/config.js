@@ -50,6 +50,12 @@ export const config = {
     apiKey: process.env.ANTHROPIC_API_KEY || '',
     model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001',
   },
+
+  // Groq — לתמלול הודעות קוליות (אופציונלי). אם ריק, קוליות לא נתמכות.
+  groq: {
+    apiKey: process.env.GROQ_API_KEY || '',
+    model: process.env.GROQ_MODEL || 'whisper-large-v3-turbo',
+  },
 };
 
 // בדיקת הגדרות חיוניות — מחזיר רשימת אזהרות (לא קורס, כדי לאפשר סימולציה מקומית).

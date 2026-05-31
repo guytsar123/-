@@ -69,3 +69,13 @@ export function loadLearnedDict() {
 export function saveLearnedDict(dict) {
   writeJson('dictionary.json', dict);
 }
+
+// ===== פריטים קבועים (staples) =====
+// רשימת פריטים שחוזרים כל שבוע. מבנה: { items: [{name, qty, unit}] }
+export function loadStaples() {
+  return readJson('staples.json', { items: [] });
+}
+
+export function saveStaples(staples) {
+  writeJson('staples.json', staples);
+}

@@ -37,6 +37,27 @@ export async function sendText(to, text) {
   });
 }
 
+// שליחת הודעה עם כפתורי בחירה (עד 3). buttons = [{ id, title }].
+// כותרת כפתור מוגבלת ל-20 תווים; גוף ההודעה עד 1024 תווים.
+export async function sendButtons(to, bodyText, buttons) {
+  const trimmed = (bodyText || ' ').slice(0, 1024) || ' ';
+  return postToGraph({
+    messaging_product: 'whatsapp',
+    to,
+    type: 'interactive',
+    interactive: {
+      type: 'button',
+      body: { text: trimmed },
+      action: {
+        buttons: buttons.slice(0, 3).map((b) => ({
+          type: 'reply',
+          reply: { id: b.id, title: b.title.slice(0, 20) },
+        })),
+      },
+    },
+  });
+}
+
 // ריאקציית אימוג'י על הודעה קיימת (אישור שקט).
 export async function sendReaction(to, messageId, emoji) {
   return postToGraph({

@@ -4,7 +4,8 @@ import express from 'express';
 import crypto from 'node:crypto';
 import { config, checkConfig } from './config.js';
 import { handleMessage } from './handler.js';
-import { sendText, sendReaction, markAsRead } from './whatsapp.js';
+import { sendText, sendReaction, sendButtons, markAsRead } from './whatsapp.js';
+import { transcribeIncomingAudio } from './voice.js';
 
 const app = express();
 
@@ -93,26 +94,43 @@ async function handleIncoming(msg, value) {
     return;
   }
 
-  // מחלצים טקסט (כרגע תומכים בהודעות טקסט; קולי/תמונה — בהמשך).
+  // מחלצים טקסט / מזהה כפתור.
   let text = null;
-  if (msg.type === 'text') text = msg.text?.body;
-  else if (msg.type === 'button') text = msg.button?.text;
-  else if (msg.type === 'interactive') text = msg.interactive?.button_reply?.title || msg.interactive?.list_reply?.title;
+  if (msg.type === 'text') {
+    text = msg.text?.body;
+  } else if (msg.type === 'interactive' && msg.interactive?.button_reply) {
+    // לחיצת כפתור — מעבירים את ה-id עם קידומת כדי שה-handler ינתב לפי פעולה.
+    text = 'BTN:' + msg.interactive.button_reply.id;
+  } else if (msg.type === 'interactive') {
+    text = msg.interactive?.list_reply?.title;
+  } else if (msg.type === 'button') {
+    text = msg.button?.text;
+  } else if (msg.type === 'audio') {
+    // הודעה קולית — תמלול (אם מוגדר).
+    text = await transcribeIncomingAudio(msg);
+    if (text) await sendText(from, `🎤 _שמעתי:_ "${text}"`);
+  }
 
   if (!text) {
-    await sendText(from, 'כרגע אני מבין רק הודעות טקסט 🙂 כתוב לי מה להוסיף לרשימה.');
+    if (msg.type === 'audio') {
+      await sendText(from, '🎤 קיבלתי הודעה קולית אבל תמלול עדיין לא מוגדר. כתוב לי בטקסט בינתיים 🙂');
+    } else {
+      await sendText(from, 'כרגע אני מבין הודעות טקסט והקלטות קוליות 🙂 כתוב לי מה להוסיף לרשימה.');
+    }
     return;
   }
 
   console.log(`[הודעה] מ-${from}: ${text}`);
   markAsRead(messageId).catch(() => {});
 
-  const { reply, react } = await handleMessage(text);
+  const { reply, react, buttons } = await handleMessage(text);
 
   if (react) {
     await sendReaction(from, messageId, react);
   }
-  if (reply) {
+  if (buttons && buttons.length) {
+    await sendButtons(from, reply || ' ', buttons);
+  } else if (reply) {
     await sendText(from, reply);
   }
 }
