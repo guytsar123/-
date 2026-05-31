@@ -60,8 +60,8 @@ export async function handleMessage(text) {
       if (merged.length && !added.length) {
         return { reply: `♻️ כבר ברשימה: ${joinList(merged)}`, react: null };
       }
-      // הוספה רגילה — אישור שקט בריאקציה
-      return { reply: null, react: '👍' };
+      // הוספה רגילה — אישור טקסט קצר (אמין יותר מריאקציה, שתלויה במזהה הודעה תקין).
+      return { reply: `✅ נוסף: ${joinList(added)}`, react: null };
     }
 
     case 'remove': {
@@ -74,9 +74,9 @@ export async function handleMessage(text) {
     }
 
     case 'bought': {
-      if (!intent.items.length) return { reply: null, react: '✅' };
+      if (!intent.items.length) return { reply: 'מה קנית?', react: null };
       const { marked, notFound } = markBought(intent.items);
-      if (marked.length && !notFound.length) return { reply: null, react: '✅' };
+      if (marked.length && !notFound.length) return { reply: `✅ סומן כנקנה: ${joinList(marked)}`, react: null };
       let reply = '';
       if (marked.length) reply += `✅ סומן כנקנה: ${joinList(marked)}`;
       if (notFound.length) reply += (reply ? '\n' : '') + `🤷 לא ברשימה: ${joinList(notFound)}`;
